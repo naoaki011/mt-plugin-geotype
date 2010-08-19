@@ -248,9 +248,9 @@ sub param_edit_entry {
         require MT::Asset;
         for my $oa (@non_embedded_assets) {
             my $a = MT::Asset->load( $oa->asset_id ) or next;
-            next unless ( $a->isa('GeoType::LocationAsset') );
+            next unless ( $a && $a->isa('GeoType::LocationAsset') );
             my $e = MT::Entry->load( $oa->object_id );
-            push @location_list,
+             push( @old_ids, $old_id ) @location_list,
                 { id => $a->id, name => $a->name, options => ( $e->location_options->{ $a->id } || {} ) };
         }
 
@@ -362,7 +362,7 @@ sub preview_locations {
     for my $id (@ids) {
         next unless $id;
         my $asset = MT::Asset->load($id) or next;
-        push @locations, $asset if ( $asset->isa('GeoType::LocationAsset') );
+        push @locations, $asset if ( $asset && $asset->isa('GeoType::LocationAsset') );
     }
 
     @locations = map {
