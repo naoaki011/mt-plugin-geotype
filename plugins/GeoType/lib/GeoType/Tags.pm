@@ -345,7 +345,7 @@ sub detailmap_for_entries { # main detailmap handler
     my ($args, $cond, $tmpl, $entries) = @_;
     require GeoType::LocationAsset;
     require GeoType::Util;
-    
+
     my $width  = $args->{width};
     my $height = $args->{height};
     my $square = $args->{square};
