@@ -124,6 +124,8 @@ sub _hdlr_map_header {
 
     my $blog = $ctx->stash('blog');
 
+	my $info_window_flag = $args->{'infowindow'};
+
     $ctx->var( 'geo_type_header', 1 );
     require GeoType::Util;
     my $key      = GeoType::Util::get_google_api_key( $ctx->stash('blog'), 'site' );
@@ -142,13 +144,21 @@ sub _hdlr_map_header {
     my $type          = $config->{interactive_map_type_control} || 0;
     my $zoom_controls = $config->{interactive_map_zoom_control} || 'none';
     my $static_path = $ctx->tag( 'StaticWebPath', {}, $cond );
-
     my $infowindow_js = '';
     my $zoomtofit     = 0;
-    if ( $args->{infowindow} ) {
+#	 if ( $args->{info_window} eq "1" ) {
         $infowindow_js =
-            "GEvent.addListener(marker, 'click', function() { marker.openInfoWindowHtml(location.html); });";
-    }
+#            "GEvent.addListener(marker, 'click', function() { marker.openInfoWindowHtml(location.html); });";
+#            "GEvent.addListener(marker, 'load', function() { 
+            "GEvent.addListener(marker, 'click', function() { 
+					marker.openInfoWindowHtml('<b>' + 
+						location.name + 
+						'</b> <br\/>' + 
+						location.addr); });";
+
+#	 }
+	
+
     if ( $args->{zoomtofit} ) {
         $zoomtofit = 1;
     }
@@ -315,7 +325,7 @@ sub _hdlr_map_header {
             marker.bindInfoWindowHtml (location.options.contents);
         }
 
-        return marker;
+       return marker;
     }
 
     function maps_loaded () {
@@ -382,6 +392,7 @@ sub detailmap_for_entries { # main detailmap handler
                 geometry => $location->geometry,
                 lat      => $location->latitude,
                 lng      => $location->longitude,
+					 addr		 => $location->description,
                 html     => $tmpl->build( $ctx, $cond )
             };
             push @locations, $location_hash;
@@ -389,6 +400,7 @@ sub detailmap_for_entries { # main detailmap handler
     }
     require JSON;
     my $location_json = @locations ? JSON::objToJson( \@locations ) : '[]';
+
     my $wikipedia = $args->{wikipedia} || '';
     my $panoramio = $args->{panoramio} || 0;
     my $map_id = 'detailmap';
@@ -619,11 +631,13 @@ sub _hdlr_map {
                 geometry => $_->geometry,
                 lat      => $_->latitude,
                 lng      => $_->longitude,
-                options  => $loc_options->{ $_->id }
+					 addr		 => $_->description,
+               options  => $loc_options->{ $_->id }
             }
         } @assets;
         require JSON;
         my $location_json = @locations ? JSON::objToJson( \@locations ) : '[]';
+
         my $wikipedia = $args->{wikipedia} || '';
         my $panoramio = $args->{panoramio} || 0;
         $res .= qq{
@@ -1130,5 +1144,7 @@ sub geo_type_map_tag {
 #
 #   return $html;
 # }
+
+
 
 1;
